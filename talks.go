@@ -81,13 +81,11 @@ EVENT NAME
 ` + times + tags + `
 
 kei kamikawa
-Twitter: @CodeHex
-GitHub: Code-Hex
 
 * Kei Kamikawa
 .image images/alpaca.jpg 200 200
-- Twitter: @CodeHex
-- GitHub: Code-Hex
+- Twitter: [[https://twitter.com/CodeHex][@CodeHex]]
+- GitHub: [[https://github.com/Code-Hex][Code-Hex]]
 `)
 }
 
