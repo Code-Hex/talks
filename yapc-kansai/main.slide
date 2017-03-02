@@ -1,0 +1,177 @@
+Perl to Go
+YAPC::Kansai
+23:50 1 Mar 2017
+Tags: perl, go, yapc, kansai
+
+kei kamikawa
+Twitter: @CodeHex
+GitHub: Code-Hex
+
+* Kei Kamikawa
+.image images/alpaca.jpg 250 250
+- Twitter: [[https://twitter.com/CodeHex][@CodeHex]]
+- GitHub: [[https://github.com/Code-Hex][Code-Hex]]
+- [[http://okinawa.pm.org/][Okinawa.pm]]
+- 琉球大学 B3
+- 学科内生徒認証システム開発
+
+* Okinawa.pm
+.image images/okinawa.png 500 500
+.caption _Image_ by [[http://okinawa.pm.org/][Okinawa.pm]]
+
+* Okinawa.pm
+.image images/sc.png 550 1000
+
+* Perl モジュールから書き直す時のコツっぽい話
+- オブジェクト指向
+- Golet を作る過程で身につけたこと↓
+- 設定として struct をメソッドへ渡す
+- アロケーションをできる限り抑える
+- Go でプロセスを扱う
+
+* オブジェクト指向
+
+* Perl の OOP
+: ひとつのパッケージがひとつのクラスとなる
+: ポリモーフィズムはクラスによって振る舞いを変える
+- Perl ではパッケージ名をクラスとして考えることができる
+- Perl は標準で継承, ポリモーフィズムが出来る
+- ちなみにカプセル化の手段の一つとして [[http://search.cpan.org/~miyagawa/Attribute-Protected-0.03/lib/Attribute/Protected.pm][Attribute::Protected]] を使う
+
+* Go は OO
+- Dave Cheney 氏曰く Go は OOP ではなく OO
+- [[https://invite.slack.golangbridge.org/][gophers.slack.com]] で `Go is absolutely OO` で検索すると出てくる
+- [[http://spf13.com/post/is-go-object-oriented/][http://spf13.com/post/is-go-object-oriented/]]
+- Go にクラスは存在しない
+- Go では interface を使ってポリモーフィズムを行うことができる
+- struct の private field とメソッドを使うことでカプセル化を行える
+  type Me struct {
+    name string // private field
+  }
+  func (m *Me) Name() string {
+    return m.name
+  }
+  func New(name string) *Me {
+    return &Me{name}
+  }
+
+
+* コンストラクタの定義
+- Perl の場合のインスタンスは hashref で扱う
+- デフォルト値の定義は次のように行う
+  sub new {
+      my $class = shift;
+      return bless {
+          name => "codehex",
+          age  => 21
+      }, $class;
+  }
+- Go の場合のインスタンスは struct で扱う
+- Go の場合も同じように初期値を代入する関数を作る
+  func New() *Person {
+    return &Person{
+        Name: "codehex",
+        Age: 21,
+    }
+  }
+
+* コンストラクタの定義
+
+- なぜポインタを返すのか
+  func NewPerson(name string, age int) *Person {
+    if age < 0 {
+      return nil
+    }
+    return &Person{
+        Name: name,
+        Age: age,
+    }
+  }
+- 予期しない値を引数とした時, nil を返すことで失敗したことを教えられる
+- new という名前の場合ポインタを返すという文化？
+- [[https://golang.org/doc/effective_go.html#allocation_new][https://golang.org/doc/effective_go.html#allocation_new]]
+
+* メソッドを扱う
+
+- Perl の場合インスタンスメソッドでインスタンス内の情報を変更できる
+  $obj->my_name_is(); # "codehex"
+  $obj->codehex_to_papix(); # $self->{name} = "papix"
+  $obj->my_name_is(); # "papix"
+- Go でも同じようにインスタンスの変更を永続的に反映させたい
+- ポインタレシーバを使う
+
+  func (p *Person) CodeHexToPapix() {
+    p.Name = "papix"
+  }
+
+  obj.MyNameIs() // "codehex"
+  obj.CodeHexToPapix()
+  obj.MyNameIs() // "papix"
+
+* メソッドを扱う
+- 値レシーバの場合
+.play example/go/nonpointer.go /^func main/,/}/
+- ポインタレシーバの場合
+.play example/go/pointer.go /^func main/,/}/
+- ポインタレシーバを常に扱うことをオススメ
+
+* ポリモーフィズム
+- Perl の場合, パッケージによって振る舞いを変更する
+.code example/perl/polymorphism.pl
+
+* ポリモーフィズム
+- Go の場合は型, メソッドによって振る舞いを変更する
+.play example/go/polymorphism.go
+
+* What is Golet??
+
+* What is Golet??
+- [[https://metacpan.org/pod/Proclet][Proclet]] を Go で書き直したツール
+- 1 つのプログラムで複数のコード、コマンドを実行することができる
+- Cron としても実行することができる
+- [[https://github.com/Code-Hex/golet][https://github.com/Code-Hex/golet]]
+- [[http://codehex.hateblo.jp/entry/2017/02/10/193743][http://codehex.hateblo.jp/entry/2017/02/10/193743]]
+
+* 設定として struct をメソッドへ渡す
+
+* 設定として struct をメソッドへ渡す
+- Proclet の場合だと hash をパラメータとして渡している
+  $proclet->service(
+    code => sub {
+        scheduled_work();
+    },
+    tag => 'cron',
+    every => '0 12 * * *',
+  );
+- Golet の場合は struct を渡す
+
+  p := golet.New(context.Background())
+  p.Add(
+    golet.Service{
+      Exec:   "echo 'This is cron!!'",
+      Every:  "30 * * * * *",
+      Worker: 2,
+      Tag:    "cron",
+    },
+  )
+
+* なぜ struct を渡すのか
+- struct 自体が nil ではない場合、フィールドの値が必ず初期化されている
+- map だと key が存在しているか確認しないといけない
+- しかも複数型をもたせる場合, 型判別のためのコードを書かなければならない
+
+* map を使った場合のコードの例
+.code example/go/map.go
+
+*  
+.html html/bad.html
+
+* struct を使った場合
+.code example/go/struct.go /^func main/,/END OMIT/
+
+*  
+.html html/good.html
+
+* アロケーションをできる限り抑える
+
+* Go でプロセスを扱う
