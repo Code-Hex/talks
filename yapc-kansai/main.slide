@@ -23,11 +23,6 @@ GitHub: Code-Hex
 .image images/sc.png 550 1000
 
 * Perl モジュールから書き直す時のコツっぽい話
-- オブジェクト指向
-- Golet を作る過程で身につけたこと↓
-- 設定として struct をメソッドへ渡す
-- アロケーションをできる限り抑える
-- Go でプロセスを扱う
 
 * オブジェクト指向
 
@@ -123,7 +118,9 @@ GitHub: Code-Hex
 - Go の場合は型, メソッドによって振る舞いを変更する
 .play example/go/polymorphism.go
 
-* What is Golet??
+* モジュールを Go で書き直してみる
+
+* Proclet を書き直して Golet を作った!!
 
 * What is Golet??
 - [[https://metacpan.org/pod/Proclet][Proclet]] を Go で書き直したツール
@@ -174,4 +171,91 @@ GitHub: Code-Hex
 
 * アロケーションをできる限り抑える
 
+* 主にアロケーションを行うパターン
+
+- make による slice の初期化
+  make([]string)
+- make による map の初期化
+  make(map[string]interface{})
+- new, &T{} などのポインタを返す構造体の初期化
+  type T struct { i int; f float64; next *T }
+  new(T)
+  &T{}
+  // t.i == 0
+  // t.f == 0.0
+  // t.next == nil
+
+* Capacity を指定するだけでめっちゃ早くなる!!
+
+- slice の場合, make の第 2 引数に要素数, 第 3 引数に capacity を指定できる
+  s := make([]string, 0, 100)
+  for i := 0; i < 100; i++ {
+    s := append(s, "STRING") // append のタイミングで要素数が増える
+  }
+
+  make([]string, 100, 100)
+  for i := 0; i < 100; i++ {
+    s[i] = "STRING" // append を呼ばない分, 少しだけ早い
+  }
+- map の場合, make の第 2 引数に capacity を指定できる
+  m := make(map[string]int, 100) // 100 個の要素分の capacty を確保
+  for i, key := range keys {
+    m[k] = i
+  }
+
+* Benchmark
+- slice [[https://github.com/Code-Hex/go-benchmarklist/tree/master/append][benchmark]]
+  BenchmarkNormal-4      	 5000000	       211 ns/op	     123 B/op	       1 allocs/op
+  BenchmarkAllocated-4   	20000000	       126 ns/op	      88 B/op	       1 allocs/op
+  BenchmarkFor-4         	20000000	       105 ns/op	      88 B/op	       1 allocs/op
+  PASS
+  ok  	github.com/Code-Hex/go-benchmarklist/append	7.243s
+- map [[https://github.com/Code-Hex/go-benchmarklist/tree/master/map][benchmark]]
+  BenchmarkNormal-4      	 2000000	       736 ns/op	     163 B/op	       1 allocs/op
+  BenchmarkAllocated-4   	 5000000	       387 ns/op	     111 B/op	       1 allocs/op
+  PASS
+  ok  	github.com/Code-Hex/go-benchmarklist/map	4.591s
+
 * Go でプロセスを扱う
+
+* Proclet の場合
+
+- Proclet では exec, サブルーチンの実行を子プロセスで行う
+  $proclet->service(
+    code => sub {
+        scheduled_work();
+    },
+  );
+  $proclet->service(
+    code => ["ping", "google.com"]
+  );
+- 親である Proclet のプロセスがシグナルを受け取った時, 子プロセスへシグナルを送る
+- TERM, HUP => TERM を送る
+- INT => INT を送る
+
+* Go で fork ができるのか
+
+- 親プロセスがマルチスレッドの場合, fork を行うのはとても難しい
+- [[http://d.hatena.ne.jp/yupo5656/20040715/p1][http://d.hatena.ne.jp/yupo5656/20040715/p1]]
+- ライブラリは幾つかあるけど... (linux, mac: [[https://github.com/sevlyar/go-daemon][github.com/sevlyar/go-daemon]])
+- Go ではやめたほうがいい
+
+* 何故 exec は実行できるのか
+
+- コマンドを実行する時, fork を行っている
+- fork を行った後, dup や tty の設定を行った後, execcve(2) を呼んでいる
+- [[https://golang.org/src/syscall/exec_linux.go][https://golang.org/src/syscall/exec_linux.go]]
+- つまり子プロセス内のデータ領域がリセットされて、実行される => safe!!
+
+* Golet の場合
+
+- exec でコマンドを実行する
+- コードは親プロセス内の context + goroutine で行う
+- TERM, HUP => 子プロセスへ TERM を送信, context cancel を行う
+- INT => 子プロセスへ INT を送信
+
+* まとめ
+
+- Perl と Go の違いを考える
+- それぞれにあった書き方で作成する
+- Perl モジュールを Go で書き直すの楽しいよ！
