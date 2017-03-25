@@ -1,0 +1,63 @@
+Go 1.8 Release Party in Tokyo へ行った話 + Customize Echo
+Okinawa-go #5
+11:08 25 Mar 2017
+Tags: Okinawa-go, gocon, echo
+
+kei kamikawa
+Twitter: @CodeHex
+GitHub: Code-Hex
+
+* Kei Kamikawa
+.image images/alpaca.jpg 200 200
+- Twitter: [[https://twitter.com/CodeHex][@CodeHex]]
+- GitHub: [[https://github.com/Code-Hex][Code-Hex]]
+- 琉球大学 B3
+- Perl Monger or Gopher
+
+* Okinawa.pm
+.image images/okinawa.png 500 500
+.caption _Image_ by [[http://okinawa.pm.org/][Okinawa.pm]]
+
+* Okinawa.pm
+.image images/sc.png 550 1000
+
+* Go 1.8 Release Party in Tokyo へ行った話
+
+* 聞いた話
+- [[http://go-talks.appspot.com/github.com/tcnksm/talks/2017/02/go1.8/go1.8.slide#1][Go 1.8 Release Party in Tokyo]] by @deeeet
+- [[https://docs.google.com/presentation/d/1OT-dMNbiwOPeaivQOldok2hUUNMTvSC0GJ67JohLt5U/pub?start=false&loop=false&delayms=3000][Idiomatic Go Readability]] by @haya14busa
+- Hot-deploying in Go by @BABAROT
+- [[https://www.slideshare.net/takuyaueda967/go-72158330][粗探しをしてGoのコントリビューターになる方法]] by @tenntenn
+- Go 1.8 plugin by Ian
+- HTTP/2 server push by shibukawa
+
+* 感想
+- 皆さん Go が本当に大好きなんだなと感じた
+- 小さな疑問に皆さんが答えてくれた！
+- 遠方から来た人には優しい制度
+- Gopher のぬいぐるみ最高!!
+
+* Customize Echo
+
+* What is Echo?
+- 最小限に抑えられた Go の web framework
+- Group APIs
+- 拡張がしやすい middleware framework
+- Automatic TLS や HTTP/2 をサポート
+- カスタマイズ性が高い
+- [[https://github.com/labstack/echo][https://github.com/labstack/echo]]
+
+* 最近使ってるパッケージ
+- Basic 認証を楽に作れるくん [[https://github.com/Code-Hex/saltissimo][https://github.com/Code-Hex/saltissimo]]
+- bin-data を使って静的ファイルのルーティングをする [[https://github.com/Code-Hex/echo-static][https://github.com/Code-Hex/echo-static]]
+- ActiveRecord に憧れてるくん [[https://github.com/jinzhu/gorm][https://github.com/jinzhu/gorm]]
+- Hot-deploy 対応 [[https://github.com/lestrrat/go-server-starter][https://github.com/lestrrat/go-server-starter]]
+- ログローテトしてくれる [[https://github.com/lestrrat/go-file-rotatelogs][https://github.com/lestrrat/go-file-rotatelogs]]
+- 高速に JSON ログを作成する [[https://github.com/uber-go/zap][https://github.com/uber-go/zap]]
+
+* 実際に開発中
+- 完全に俺得自前の画像投稿サービス
+- アップロード時に画像加工して保存しておくスタイル
+- [[https://github.com/Code-Hex/kamemaru][kamemaru]]
+
+* 実際にコードを見ていきましょう
